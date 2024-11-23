@@ -40,6 +40,7 @@ The project template is centered around the following tools:
 - [Poetry] for packaging and dependency management
 - [Nox] for automation of checks and other development tasks
 - [GitHub Actions] for continuous integration and delivery
+- [Ruff] for static code analysis and linting
 
 (features)=
 
@@ -49,9 +50,9 @@ Here is a detailed list of features for this Python template:
 
 ```{eval-rst}
 .. include:: ../README.md
-   :parser: myst_parser.sphinx_
-   :start-after: <!-- features-begin -->
-   :end-before: <!-- features-end -->
+  :parser: myst_parser.sphinx_
+  :start-after: <!-- features-begin -->
+  :end-before: <!-- features-end -->
 
 ```
 
@@ -152,7 +153,7 @@ you can make these Python versions accessible in the project directory,
 using the following command:
 
 ```console
-$ pyenv local 3.12.9 3.11.9 3.10.14 3.9.19 3.8.19 
+$ pyenv local 3.12.9 3.11.9 3.10.14 3.9.19 3.8.19
 ```
 
 The first version listed is the one used when you type plain `python`.
@@ -446,12 +447,8 @@ and links each file to a section with more details.
 
 - - `.cookiecutter.json`
   - [Project variables](creating-a-project)
-- - `.darglint`
-  - Configuration for [darglint](darglint-integration)
 - - `.github/dependabot.yml`
   - Configuration for [Dependabot](dependabot-integration)
-- - `.flake8`
-  - Configuration for [Flake8](the-flake8-hook)
 - - `.gitattributes`
   - [Git attributes][.gitattributes]
 - - `.gitignore`
@@ -473,7 +470,6 @@ and links each file to a section with more details.
 - - `pyproject.toml`
   - Configuration for [Poetry](using-poetry),
     [Coverage.py](the-coverage-session),
-    [isort](the-isort-hook),
     and [mypy](type-checking-with-mypy)
 
 :::
@@ -679,7 +675,7 @@ in the root directory of the project,
 and named `pyproject.toml`.
 It uses the [TOML] configuration file format,
 and contains two sections---_tables_ in TOML parlance---,
-specified in [PEP 517][pep 517] and [518][pep 518]:
+specified in [PEP 517][pep 517] and [518][pep 518]:
 
 - The `build-system` table
   declares the requirements and the entry point
@@ -693,12 +689,12 @@ specified in [PEP 517][pep 517] and [518][pep 518]:
 
 - - `tool.coverage`
   - Configuration for [Coverage.py]
-- - `tool.isort`
-  - Configuration for [isort]
 - - `tool.mypy`
   - Configuration for [mypy]
 - - `tool.poetry`
   - Configuration for [Poetry]
+- - `tool.ruff`
+  - Configuration for [Ruff]
 
 :::
 
@@ -834,32 +830,16 @@ See the table below for an overview of the dependencies of generated projects:
 :::{list-table} Dependencies
 :widths: auto
 
-- - [black]
-  - The uncompromising code formatter.
 - - [click]
   - Composable command line interface toolkit
 - - [coverage][coverage.py]
   - Code coverage measurement for Python
-- - [darglint]
-  - A utility for ensuring Google-style docstrings stay up to date with the source code.
-- - [flake8]
-  - the modular source code checker: pep8 pyflakes and co
-- - [flake8-bandit]
-  - Automated security testing with bandit and flake8.
-- - [flake8-bugbear]
-  - A plugin for flake8 finding likely bugs and design problems in your program.
-- - [flake8-docstrings]
-  - Extension for flake8 which uses pydocstyle to check docstrings
-- - [flake8-rst-docstrings]
-  - Python docstring reStructuredText (RST) validator
+- - [pydoclint]
+  - A utility for ensuring docstrings stay up to date with the source code.
 - - [furo]
   - A clean customisable Sphinx documentation theme.
-- - [isort]
-  - A Python utility / library to sort Python imports.
 - - [mypy]
   - Optional static typing for Python
-- - [pep8-naming]
-  - Check PEP-8 naming conventions, plugin for flake8
 - - [pre-commit]
   - A framework for managing and maintaining multi-language pre-commit hooks.
 - - [pre-commit-hooks]
@@ -868,8 +848,6 @@ See the table below for an overview of the dependencies of generated projects:
   - Pygments is a syntax highlighting package written in Python.
 - - [pytest]
   - pytest: simple powerful testing with Python
-- - [pyupgrade]
-  - A tool to automatically upgrade syntax for newer versions.
 - - [safety]
   - Checks installed dependencies for known vulnerabilities.
 - - [sphinx]
@@ -884,6 +862,7 @@ See the table below for an overview of the dependencies of generated projects:
   - A rewrite of the builtin doctest module
 
 :::
+
 
 (using-poetry)=
 
@@ -1681,7 +1660,7 @@ validating changes staged for a commit.
 
 Requiring changes to be staged allows for a nice property:
 Many pre-commit hooks support fixing offending lines automatically,
-for example `black`, `prettier`, and `isort`.
+for example `prettier`.
 When this happens,
 your original changes are in the staging area,
 while the fixes are in the work tree.
@@ -1691,7 +1670,7 @@ before committing again.
 If you want to run linters or formatters on modified files,
 and you do not want to stage the modifications just yet,
 you can also invoke the tools via Poetry instead.
-For example, use `poetry run flake8 <file>` to lint a modified file with Flake8.
+For example, use `poetry run ruff <file>` to lint a modified file with Ruff.
 
 ### Overview of pre-commit hooks
 
@@ -1700,16 +1679,8 @@ The {{ HPC }} comes with a pre-commit configuration consisting of the following 
 :::{list-table} pre-commit hooks
 :widths: auto
 
-- - [black]
-  - Run the [Black] code formatter
-- - [flake8]
-  - Run the [Flake8] linter
-- - [isort]
-  - Rewrite source code to sort Python imports
 - - [prettier]
   - Run the [Prettier] code formatter
-- - [pyupgrade]
-  - Upgrade syntax to newer versions of Python
 - - [check-added-large-files]
   - Prevent giant files from being committed
 - - [check-toml]
@@ -1720,249 +1691,67 @@ The {{ HPC }} comes with a pre-commit configuration consisting of the following 
   - Ensure files are terminated by a single newline
 - - [trailing-whitespace]
   - Ensure lines do not contain trailing whitespace
+- - [ruff]
+  - Run the [Ruff] linter and code formatter
 
 :::
-
-### The Black hook
-
-[Black] is the uncompromising Python code formatter.
-One of its greatest features is its lack of configurability.
-Blackened code looks the same regardless of the project you're reading.
 
 ### The Prettier hook
 
 [Prettier] is an opinionated code formatter for many languages,
 including YAML, Markdown, and JavaScript.
-Like Black, it has few options,
+Like Ruff, it has few options,
 and the {{ HPC }} uses none of them.
 
-(the-flake8-hook)=
+## Linting with Ruff
 
-### The Flake8 hook
+[Ruff] is an extremely fast Python linter, written in Rust. It supports many rules from Flake8, isort, pyupgrade, and other tools, effectively consolidating all of your linting needs in one place. The {{ HPC }} integrates Ruff via a [pre-commit] hook, ensuring your code is consistently checked before each commit.
 
-[Flake8] is an extensible linter framework for Python.
-For more details, see the section [Linting with Flake8](linting-with-flake8).
+### Configuring Ruff
 
-(the-isort-hook)=
+Ruff's behavior is controlled by the `pyproject.toml` file located in the project directory.  You'll find the configuration under the `[tool.ruff]` section. Here's a breakdown of key settings and how to customize them:
 
-### The isort hook
+**1. Selecting Rules:**
 
-[isort] reorders imports in your Python code.
-Imports are separated into three sections,
-as recommended by [PEP 8][pep 8]: standard library, third party, first party.
-There are two additional sections,
-one at the top for [future imports],
-the other at the bottom for [relative imports].
-Within each section, `from` imports follow normal imports.
-Imports are then sorted alphabetically.
+Ruff offers a comprehensive set of rules, categorized by functionality (e.g., errors, style, complexity, security). You can enable or disable specific rules, or even define your own custom rules. For example, to enable the `E501` rule (line too long) with a line length of 120 characters:
 
-The {{ HPC }} activates the [Black profile][isort black profile] for compatibility with the Black code formatter.
-Furthermore, the [force_single_line][isort force_single_line] setting is enabled.
-This splits imports onto separate lines to avoid merge conflicts.
-Finally, two blank lines are enforced after imports for consistency,
-via the [lines_after_imports][isort lines_after_imports] setting.
-
-### The pyupgrade hook
-
-[pyupgrade] upgrades your source code
-to newer versions of the Python language and standard library.
-The tool analyzes the [abstract syntax tree] of the modules in your project,
-replacing deprecated or legacy usages with modern idioms.
-
-The minimum supported Python version is declared in the relevant section of `.pre-commit-config.yaml`.
-You should change this setting whenever you drop support for an old version of Python.
-
-### Hooks from pre-commit-hooks
-
-The pre-commit configuration also includes several smaller hooks
-from the [pre-commit-hooks] repository.
-
-(linting-with-flake8)=
-
-## Linting with Flake8
-
-[Flake8] is an extensible linter framework for Python,
-and a command-line utility to run the linters on your source code.
-The {{ HPC }} integrates Flake8 via a [pre-commit] hook,
-see the section [The Flake8 hook](the-flake8-hook).
-
-The configuration file for Flake8 and its extensions
-is named `.flake8` and located in the project directory.
-For details about the configuration file, see the [official reference][flake8 configuration].
-
-The sections below describe the linters in more detail.
-Each section also notes any configuration settings applied by the {{ HPC }}.
-
-### Overview of available plugins
-
-Flake8 comes with a rich ecosystem of plugins.
-The following table lists the Flake8 plugins used by the {{ HPC }},
-and links to their lists of error codes.
-
-:::{list-table} Flake8 plugins
-:widths: auto
-
-- - [pyflakes]
-  - Find invalid Python code
-  - [F][pyflakes codes]
-- - [pycodestyle]
-  - Enforce style conventions from [PEP 8]
-  - [E,W][pycodestyle codes]
-- - [pep8-naming]
-  - Enforce naming conventions from [PEP 8]
-  - [N][pep8-naming codes]
-- - [pydocstyle] / [flake8-docstrings]
-  - Enforce docstring conventions from [PEP 257]
-  - [D][pydocstyle codes]
-- - [flake8-rst-docstrings]
-  - Find invalid [reStructuredText] in docstrings
-  - [RST][flake8-rst-docstrings codes]
-- - [flake8-bugbear]
-  - Detect bugs and design problems
-  - [B][flake8-bugbear codes]
-- - [mccabe]
-  - Limit the code complexity
-  - [C][mccabe codes]
-- - [darglint]
-  - Detect inaccurate docstrings
-  - [DAR][darglint codes]
-- - [Bandit] / [flake8-bandit]
-  - Detect common security issues
-  - [S][bandit codes]
-
-:::
-
-### pyflakes
-
-[pyflakes] parses Python source files and finds invalid code.
-Warnings reported by this tool include
-syntax errors,
-undefined names,
-unused imports or variables,
-and more.
-It is included with [Flake8] by default.
-
-[Error codes][pyflakes codes] are prefixed by `F` for "flake".
-
-### pycodestyle
-
-[pycodestyle] checks your code against the style recommendations of [PEP 8][pep 8],
-the official Python style guide.
-The tool detects
-whitespace and indentation issues,
-deprecated features,
-bare excepts,
-and much more.
-It is included with [Flake8] by default.
-
-[Error codes][pycodestyle codes] are prefixed by `W` for warnings and `E` for errors.
-
-The {{ HPC }} disables the following errors and warnings
-for compatibility with [Black] and [flake8-bugbear]:
-
-- `E203` (whitespace before `:`)
-- `E501` (line too long)
-- `W503` (line break before binary operator)
-
-### pep8-naming
-
-[pep8-naming] enforces the naming conventions from [PEP 8][pep 8].
-Examples are the use of camel case for the names of classes,
-the use of lowercase for the names of functions, arguments and variables,
-or the convention to name the first argument of methods `self`.
-
-[Error codes][pep8-naming codes] are prefixed by `N` for "naming".
-
-### pydocstyle and flake8-docstrings
-
-[pydocstyle] checks that docstrings comply with the recommendations of [PEP 257][pep 257]
-and a configurable style convention.
-It is integrated with Flake8 via the [flake8-docstrings] extension.
-Warnings range from missing docstrings to
-issues with whitespace, quoting, and docstring content.
-
-[Error codes][pydocstyle codes] are prefixed by `D` for "docstring".
-
-The {{ HPC }} selects the recommendations of the
-[Google styleguide][google docstring style].
-Here is an example of a function documented in Google style:
-
-```python
-def add(first: int, second: int) -> int:
-    """Add two integers.
-
-    Args:
-        first: The first argument.
-        second: The second argument.
-
-    Returns:
-        The sum of the arguments.
-    """
+```toml
+[tool.ruff]
+line-length = 120
+select = ["E501"]
 ```
 
-### flake8-rst-docstrings
+**2. Ignoring Rules:**
 
-[flake8-rst-docstrings] validates docstring markup as [reStructuredText].
-Docstrings must be valid reStructuredText
-because they are used by Sphinx to generate the API reference.
+To ignore a specific rule for a particular line or block of code, use # noqa comments.  For instance, to ignore E501 for a long line:
+long_line = "This is a very long line that exceeds the line length limit"  # noqa: E501
 
-[Error codes][flake8-rst-docstrings codes] are prefixed by `RST` for "reStructuredText",
-and group issues into numerical blocks, by their severity and origin.
+```python
+long_line = "This is a very long line that exceeds the line length limit"  # noqa: E501
+```
 
-### flake8-bugbear
+**3. Excluding Files and Directories:**
 
-[flake8-bugbear] detects bugs and design problems.
-The warnings are more opinionated than those of pyflakes or pycodestyle.
-For example,
-the plugin detects Python 2 constructs which have been removed in Python 3,
-and likely bugs such as function arguments defaulting to empty lists or dictionaries.
+You can exclude specific files or directories from Ruff's analysis using the exclude option. This is useful for ignoring third-party code or generated files.
 
-[Error codes][flake8-bugbear codes] are prefixed by `B` for "bugbear".
+```toml
+[tool.ruff]
+exclude = [
+    "path/to/exclude/*",
+    "another/file.py",
+]
+```
 
-The {{ HPC }} also enables Bugbear's `B9` warnings,
-which are disabled by default.
-In particular, `B950` checks the maximum line length
-like [pycodestyle]'s `E501`,
-but with a tolerance margin of 10%.
-This soft limit is set to 80 characters,
-which is the value used by the Black code formatter.
+**4. Per-File Configuration:**
+For more granular control, you can define per-file configurations using # ruff: noqa comments at the top of a file. This allows you to disable specific rules or adjust settings for that file only.
 
-### mccabe
+5. Extending Ruff:
 
-[mccabe] checks the [code complexity][cyclomatic complexity]
-of your Python package against a configured limit.
-The tool is included with [Flake8].
+Ruff supports plugins that extend its functionality. You can add plugins to your project to integrate with other tools or enforce custom coding standards.
 
-[Error codes][mccabe codes] are prefixed by `C` for "complexity".
+For a complete list of available rules, configuration options, and plugin information, refer to the official [ruff] documentation.
 
-The {{ HPC }} limits code complexity to a value of 10.
 
-(darglint-integration)=
-
-### darglint
-
-[darglint] checks that docstring descriptions match function definitions.
-The tool has its own configuration file, named `.darglint`.
-
-[Error codes][darglint codes] are prefixed by `DAR` for "darglint".
-
-The {{ HPC }} allows one-line docstrings without function signatures.
-Multi-line docstrings must
-specify the function signatures completely and correctly,
-using [Google docstring style].
-
-### Bandit
-
-[Bandit] is a tool designed to
-find common security issues in Python code,
-and integrated via the [flake8-bandit] extension.
-
-[Error codes][bandit codes] are prefixed by `S` for "security".
-(The prefix `B` for "bandit" is used
-when Bandit is run as a stand-alone tool.)
-
-The {{ HPC }} disables `S101` (use of assert) for the test suite,
-as [pytest] uses assertions to verify expectations in tests.
 
 (type-checking-with-mypy)=
 
@@ -2591,7 +2380,6 @@ You can also read the articles on [this blog][hypermodern python blog].
 [actions/setup-python]: https://github.com/actions/setup-python
 [actions/upload-artifact]: https://github.com/actions/upload-artifact
 [autodoc]: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
-[bandit codes]: https://bandit.readthedocs.io/en/latest/plugins/index.html#complete-test-plugin-listing
 [bandit]: https://github.com/PyCQA/bandit
 [bash]: https://www.gnu.org/software/bash/
 [batchelder include]: https://nedbatchelder.com/blog/202008/you_should_include_your_tests_in_coverage.html
@@ -2615,7 +2403,6 @@ You can also read the articles on [this blog][hypermodern python blog].
 [cupper]: https://github.com/senseyeio/cupper
 [curl]: https://curl.haxx.se
 [cyclomatic complexity]: https://en.wikipedia.org/wiki/Cyclomatic_complexity
-[darglint codes]: https://github.com/terrencepreilly/darglint#error-codes
 [darglint]: https://github.com/terrencepreilly/darglint
 [dependabot docs]: https://docs.github.com/en/github/administering-a-repository/keeping-your-dependencies-updated-automatically
 [dependabot issue 4435]: https://github.com/dependabot/dependabot-core/issues/4435
@@ -2623,13 +2410,6 @@ You can also read the articles on [this blog][hypermodern python blog].
 [dev-prod parity]: https://12factor.net/dev-prod-parity
 [editable install]: https://pip.pypa.io/en/stable/cli/pip_install/#install-editable
 [end-of-file-fixer]: https://github.com/pre-commit/pre-commit-hooks#end-of-file-fixer
-[flake8 configuration]: https://flake8.pycqa.org/en/latest/user/configuration.html
-[flake8-bandit]: https://github.com/tylerwince/flake8-bandit
-[flake8-bugbear codes]: https://github.com/PyCQA/flake8-bugbear#list-of-warnings
-[flake8-bugbear]: https://github.com/PyCQA/flake8-bugbear
-[flake8-docstrings]: https://gitlab.com/pycqa/flake8-docstrings
-[flake8-rst-docstrings codes]: https://github.com/peterjc/flake8-rst-docstrings#flake8-validation-codes
-[flake8-rst-docstrings]: https://github.com/peterjc/flake8-rst-docstrings
 [flake8]: http://flake8.pycqa.org
 [furo]: https://pradyunsg.me/furo/
 [future imports]: https://docs.python.org/3/library/__future__.html
@@ -2656,14 +2436,9 @@ You can also read the articles on [this blog][hypermodern python blog].
 [hypermodern python]: https://medium.com/@cjolowicz/hypermodern-python-d44485d9d769
 [import hook]: https://docs.python.org/3/reference/import.html#import-hooks
 [install-poetry.py]: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
-[isort black profile]: https://pycqa.github.io/isort/docs/configuration/black_compatibility.html
-[isort force_single_line]: https://pycqa.github.io/isort/docs/configuration/options.html#force-single-line
-[isort lines_after_imports]: https://pycqa.github.io/isort/docs/configuration/options.html#lines-after-imports
-[isort]: https://pycqa.github.io/isort/
 [jinja]: https://palletsprojects.com/p/jinja/
 [json]: https://www.json.org/
 [markdown]: https://spec.commonmark.org/current/
-[mccabe codes]: https://github.com/PyCQA/mccabe#plugin-for-flake8
 [mccabe]: https://github.com/PyCQA/mccabe
 [mit license]: https://opensource.org/licenses/MIT
 [mypy configuration]: https://mypy.readthedocs.io/en/stable/config_file.html
@@ -2679,7 +2454,6 @@ You can also read the articles on [this blog][hypermodern python blog].
 [pep 518]: https://www.python.org/dev/peps/pep-0518/
 [pep 561]: https://www.python.org/dev/peps/pep-0561/
 [pep 8]: http://www.python.org/dev/peps/pep-0008/
-[pep8-naming codes]: https://github.com/pycqa/pep8-naming#pep-8-naming-conventions
 [pep8-naming]: https://github.com/pycqa/pep8-naming
 [pip install]: https://pip.pypa.io/en/stable/reference/pip_install/
 [pip]: https://pip.pypa.io/
@@ -2701,13 +2475,10 @@ You can also read the articles on [this blog][hypermodern python blog].
 [pre-commit-hooks]: https://github.com/pre-commit/pre-commit-hooks
 [pre-commit]: https://pre-commit.com/
 [prettier]: https://prettier.io/
-[pycodestyle codes]: https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
 [pycodestyle]: https://pycodestyle.pycqa.org/en/latest/
-[pydocstyle codes]: http://www.pydocstyle.org/en/stable/error_codes.html
 [pydocstyle]: http://www.pydocstyle.org/
 [pyenv wiki]: https://github.com/pyenv/pyenv/wiki/Common-build-problems
 [pyenv]: https://github.com/pyenv/pyenv
-[pyflakes codes]: https://flake8.pycqa.org/en/latest/user/error-codes.html
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [pygments]: https://pygments.org/
 [pypa/gh-action-pypi-publish]: https://github.com/pypa/gh-action-pypi-publish
@@ -2725,8 +2496,9 @@ You can also read the articles on [this blog][hypermodern python blog].
 [relative imports]: https://docs.python.org/3/reference/import.html#package-relative-imports
 [release drafter]: https://github.com/release-drafter/release-drafter
 [release-drafter/release-drafter]: https://github.com/release-drafter/release-drafter
-[requirements file]: https://pip.readthedocs.io/en/stable/user_guide/#requirements-files
+[requirements file]: https://pip.readthedocs.io/en/stable/user-guide/#requirements-files
 [restructuredtext]: https://docutils.sourceforge.io/rst.html
+[ruff]: https://github.com/astral-sh/ruff
 [safety]: https://github.com/pyupio/safety
 [salsify/action-detect-and-tag-new-version]: https://github.com/salsify/action-detect-and-tag-new-version
 [schlawack semantic]: https://hynek.me/articles/semver-will-not-save-you/
