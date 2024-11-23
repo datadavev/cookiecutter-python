@@ -2481,7 +2481,7 @@ You can also read the articles on [this blog][hypermodern python blog].
 [pypa/gh-action-pypi-publish]: https://github.com/pypa/gh-action-pypi-publish
 [pypi]: https://pypi.org/
 [pyproject.toml]: https://python-poetry.org/docs/pyproject/
-[pytest layout]: https://docs.pytest.org/en/latest/explanation/goodpractices.html#choosing-a-test-layout-import-rules
+[pytest layout]: https://docs.pytest.org/en/latest/explanation/goodpractices.html#choosing-a-test-layout
 [pytest]: https://docs.pytest.org/en/latest/
 [python build]: https://python-poetry.org/docs/cli/#build
 [python package]: https://docs.python.org/3/tutorial/modules.html#packages
@@ -2489,11 +2489,11 @@ You can also read the articles on [this blog][hypermodern python blog].
 [python website]: https://www.python.org/
 [pyupgrade]: https://github.com/asottile/pyupgrade
 [read the docs]: https://readthedocs.org/
-[readthedocs webhooks]: https://docs.readthedocs.io/en/stable/webhooks.html
+[readthedocs webhooks]: https://docs.readthedocs.io/en/stable/guides/build/webhooks.html
 [relative imports]: https://docs.python.org/3/reference/import.html#package-relative-imports
 [release drafter]: https://github.com/release-drafter/release-drafter
 [release-drafter/release-drafter]: https://github.com/release-drafter/release-drafter
-[requirements file]: https://pip.readthedocs.io/en/stable/user-guide/#requirements-files
+[requirements file]: https://pip.pypa.io/en/stable/user_guide/#requirements-files
 [restructuredtext]: https://docutils.sourceforge.io/rst.html
 [ruff]: https://github.com/astral-sh/ruff
 [safety]: https://github.com/pyupio/safety
