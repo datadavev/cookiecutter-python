@@ -13,7 +13,6 @@
 [![Ruff codestyle][ruff badge]][ruff project]
 [![Contributor Covenant][contributor covenant badge]][code of conduct]
 
-
 [ruff badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
 [ruff project]: https://github.com/charliermarsh/ruff
 [calver badge]: https://img.shields.io/badge/calver-YYYY.MM.DD-22bfda.svg
