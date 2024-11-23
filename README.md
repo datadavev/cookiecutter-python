@@ -17,14 +17,14 @@
 [ruff project]: https://github.com/charliermarsh/ruff
 [calver badge]: https://img.shields.io/badge/calver-YYYY.MM.DD-22bfda.svg
 [calver]: http://calver.org/
-[code of conduct]: https://github.com/cjolowicz/cookiecutter-hypermodern-python/blob/main/CODE_OF_CONDUCT.md
-[codecov badge]: https://codecov.io/gh/cjolowicz/cookiecutter-hypermodern-python-instance/branch/main/graph/badge.svg
-[codecov page]: https://codecov.io/gh/cjolowicz/cookiecutter-hypermodern-python-instance
+[code of conduct]: https://github.com/bosd/cookiecutter-hypermodern-python/blob/main/CODE_OF_CONDUCT.md
+[codecov badge]: https://codecov.io/gh/bosd/cookiecutter-hypermodern-python-instance/branch/main/graph/badge.svg
+[codecov page]: https://codecov.io/gh/bosd/cookiecutter-hypermodern-python-instance
 [contributor covenant badge]: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
-[github actions badge]: https://github.com/cjolowicz/cookiecutter-hypermodern-python/workflows/Tests/badge.svg
-[github actions page]: https://github.com/cjolowicz/cookiecutter-hypermodern-python/actions?workflow=Tests
-[github page]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
-[license badge]: https://img.shields.io/github/license/cjolowicz/cookiecutter-hypermodern-python
+[github actions badge]: https://github.com/bosd/cookiecutter-hypermodern-python/workflows/Tests/badge.svg
+[github actions page]: https://github.com/bosd/cookiecutter-hypermodern-python/actions?workflow=Tests
+[github page]: https://github.com/bosd/cookiecutter-hypermodern-python
+[license badge]: https://img.shields.io/github/license/bosd/cookiecutter-hypermodern-python
 [license]: https://opensource.org/licenses/MIT
 [pre-commit badge]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
 [pre-commit project]: https://pre-commit.com/
@@ -43,12 +43,12 @@
 ✨📚✨ [Read the full documentation][readthedocs page]
 
 [cookiecutter]: https://github.com/audreyr/cookiecutter
-[hypermodern python]: https://medium.com/@cjolowicz/hypermodern-python-d44485d9d769
+[hypermodern python]: https://medium.com/@bosd/hypermodern-python-d44485d9d769
 
 ## Usage
 
 ```console
-cookiecutter gh:cjolowicz/cookiecutter-hypermodern-python --checkout=2022.6.3
+cookiecutter gh:bosd/cookiecutter-hypermodern-python --checkout=2022.6.3
 ```
 
 ## Features
