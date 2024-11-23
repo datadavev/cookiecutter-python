@@ -184,10 +184,10 @@ Install [Cookiecutter] using pipx:
 $ pipx install cookiecutter
 ```
 
-Install [Poetry] by downloading and running [install-poetry.py]:
+Install [Poetry] by downloading and running the install script from [install.python-poetry.org]:
 
 ```console
-$ python install-poetry.py
+$ curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 Install [Nox] and [nox-poetry] using pipx:
@@ -2432,7 +2432,7 @@ You can also read the articles on [this blog][hypermodern python blog].
 [hypermodern python cookiecutter]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
 [hypermodern python]: https://medium.com/@cjolowicz/hypermodern-python-d44485d9d769
 [import hook]: https://docs.python.org/3/reference/import.html#import-hooks
-[install-poetry.py]: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
+[install.python-poetry.org]: https://install.python-poetry.org
 [jinja]: https://palletsprojects.com/p/jinja/
 [json]: https://www.json.org/
 [markdown]: https://spec.commonmark.org/current/

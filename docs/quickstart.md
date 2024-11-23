@@ -8,10 +8,10 @@ Install [Cookiecutter]:
 $ pipx install cookiecutter
 ```
 
-Install [Poetry] by downloading and running [install-poetry.py]:
+Install [Poetry] by downloading and running the install script from [install.python-poetry.org]:
 
 ```console
-$ python install-poetry.py
+$ curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 Install [Nox] and [nox-poetry]:
