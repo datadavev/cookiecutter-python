@@ -863,7 +863,6 @@ See the table below for an overview of the dependencies of generated projects:
 
 :::
 
-
 (using-poetry)=
 
 ## Using Poetry
@@ -1709,7 +1708,7 @@ and the {{ HPC }} uses none of them.
 
 ### Configuring Ruff
 
-Ruff's behavior is controlled by the `pyproject.toml` file located in the project directory.  You'll find the configuration under the `[tool.ruff]` section. Here's a breakdown of key settings and how to customize them:
+Ruff's behavior is controlled by the `pyproject.toml` file located in the project directory. You'll find the configuration under the `[tool.ruff]` section. Here's a breakdown of key settings and how to customize them:
 
 **1. Selecting Rules:**
 
@@ -1723,8 +1722,8 @@ select = ["E501"]
 
 **2. Ignoring Rules:**
 
-To ignore a specific rule for a particular line or block of code, use # noqa comments.  For instance, to ignore E501 for a long line:
-long_line = "This is a very long line that exceeds the line length limit"  # noqa: E501
+To ignore a specific rule for a particular line or block of code, use # noqa comments. For instance, to ignore E501 for a long line:
+long_line = "This is a very long line that exceeds the line length limit" # noqa: E501
 
 ```python
 long_line = "This is a very long line that exceeds the line length limit"  # noqa: E501
@@ -1750,8 +1749,6 @@ For more granular control, you can define per-file configurations using # ruff: 
 Ruff supports plugins that extend its functionality. You can add plugins to your project to integrate with other tools or enforce custom coding standards.
 
 For a complete list of available rules, configuration options, and plugin information, refer to the official [ruff] documentation.
-
-
 
 (type-checking-with-mypy)=
 
