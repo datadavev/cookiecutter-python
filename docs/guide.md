@@ -2437,7 +2437,7 @@ You can also read the articles on [this blog][hypermodern python blog].
 [json]: https://www.json.org/
 [markdown]: https://spec.commonmark.org/current/
 [mccabe]: https://github.com/PyCQA/mccabe
-[mit license]: https://opensource.org/licenses/MIT
+[mit license]: https://opensource.org/license/mit
 [mypy configuration]: https://mypy.readthedocs.io/en/stable/config_file.html
 [mypy]: http://mypy-lang.org/
 [myst]: https://myst-parser.readthedocs.io/
