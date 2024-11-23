@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: cookiecutter-hypermodern-python
-      - uses: actions/setup-python@v4.5.0
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tools using pip
@@ -28,8 +28,6 @@ jobs:
           pip install --constraint=.github/workflows/constraints.txt pip
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt cookiecutter
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
       - name: Generate project using Cookiecutter
         run: cookiecutter --no-input cookiecutter-hypermodern-python
       - name: Create git repository
@@ -54,6 +52,15 @@ jobs:
           git add --renormalize .
           git commit --message="Initial import"
         working-directory: hypermodern-python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "v3"
+        working-directory: hypermodern-python
+        run: uv --version
+      - name: Install dependencies using uv
+        run: uv pip install
+        working-directory: hypermodern-python
       - name: Compute cache key for pre-commit
         if: matrix.os != 'windows-latest'
         id: cache_key
@@ -68,6 +75,7 @@ jobs:
           result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest)
 
           print("::set-output name=result::{}".format(result))
+        working-directory: hypermodern-python
       - uses: actions/cache@v3
         if: matrix.os != 'windows-latest'
         with:
@@ -75,9 +83,7 @@ jobs:
           key: ${{ steps.cache_key.outputs.result }}-${{ hashFiles('hypermodern-python/.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ steps.cache_key.outputs.result }}-
-      - name: Run test suite using Nox
-        run: nox --force-color --python=${{ matrix.python-version }}
         working-directory: hypermodern-python
-      - name: Install dependencies using Poetry
-        run: poetry install --ansi
+      - name: Run test suite using Nox
+        run: uv run nox --force-color --python=${{ matrix.python-version }}
         working-directory: hypermodern-python

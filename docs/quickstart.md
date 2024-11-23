@@ -8,17 +8,16 @@ Install [Cookiecutter]:
 $ pipx install cookiecutter
 ```
 
-Install [Poetry] by downloading and running the install script from [install.python-poetry.org]:
+Install [uv] by downloading and running the install script:
 
 ```console
-$ curl -sSL https://install.python-poetry.org | python3 -
+$ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Install [Nox] and [nox-poetry]:
+Install [Nox]:
 
 ```console
 $ pipx install nox
-$ pipx inject nox nox-poetry
 ```
 
 [pipx] is preferred, but you can also install with `pip install --user`.
@@ -30,7 +29,7 @@ It is recommended to set up Python 3.8, 3.9, 3.10, 3.11 and 3.12 using [pyenv].
 Generate a Python project:
 
 ```console
-$ cookiecutter gh:cjolowicz/cookiecutter-hypermodern-python --checkout="2022.6.3"
+$ cookiecutter gh:bosd/cookiecutter-uv-hypermodern-python --checkout="2024.11.23"
 ```
 
 Change to the root directory of your new project,
@@ -47,15 +46,15 @@ $ git commit
 Run the command-line interface from the source tree:
 
 ```console
-$ poetry install
-$ poetry run <project>
+$ uv install
+$ uv run <project>
 ```
 
 Run an interactive Python session:
 
 ```console
-$ poetry install
-$ poetry run python
+$ uv install
+$ uv run python
 ```
 
 ## Testing
@@ -123,7 +122,7 @@ Releases are triggered by a version bump on the default branch.
 It is recommended to do this in a separate pull request:
 
 1. Switch to a branch.
-2. Bump the version using [poetry version].
+2. Bump the version using [uv bump].
 3. Commit and push to GitHub.
 4. Open a pull request.
 5. Merge the pull request.
@@ -159,12 +158,10 @@ by applying labels to them, like this:
 [codecov]: https://codecov.io/
 [cookiecutter]: https://github.com/audreyr/cookiecutter
 [github]: https://github.com/
-[install-poetry.py]: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
 [nox]: https://nox.thea.codes/
-[nox-poetry]: https://nox-poetry.readthedocs.io/
 [pipx]: https://pipxproject.github.io/pipx/
-[poetry]: https://python-poetry.org/
-[poetry version]: https://python-poetry.org/docs/cli/#version
+[uv]: https://docs.astral.sh/uv/
+[uv bump]: https://docs.astral.sh/uv/reference/cli/
 [pyenv]: https://github.com/pyenv/pyenv
 [pypi]: https://pypi.org/
 [read the docs]: https://readthedocs.org/

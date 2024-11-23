@@ -35,9 +35,8 @@ Request features on the [Issue Tracker].
 You need Python 3.8+ and the following tools:
 
 - [Cookiecutter]
-- [Poetry]
+- [uv]
 - [Nox]
-- [nox-poetry]
 
 Fork the repository on [GitHub],
 and clone the fork to your local machine. You can now generate a project
@@ -135,15 +134,14 @@ After publishing the release, the following automated steps are triggered:
 [continuous integration]: https://cookiecutter-hypermodern-python.readthedocs.io/en/stable/quickstart.html#continuous-integration
 [cookiecutter]: https://cookiecutter.readthedocs.io/
 [documentation]: https://cookiecutter-hypermodern-python.readthedocs.io/
-[github]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
-[issue tracker]: https://github.com/cjolowicz/cookiecutter-hypermodern-python/issues
+[github]: https://github.com/bosd/cookiecutter-uv-hypermodern-python
+[issue tracker]: https://github.com/bosd/cookiecutter-uv-hypermodern-python/issues
 [mit license]: https://opensource.org/license/mit
 [nox]: https://nox.thea.codes/
-[nox-poetry]: https://nox-poetry.readthedocs.io/
-[poetry]: https://python-poetry.org/
-[pull request]: https://github.com/cjolowicz/cookiecutter-hypermodern-python/pulls
+[uv]: https://docs.astral.sh/uv/
+[pull request]: https://github.com/bosd/cookiecutter-uv-hypermodern-python/pulls
 [read the docs]: https://cookiecutter-hypermodern-python.readthedocs.io/
-[source code]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
+[source code]: https://github.com/bosd/cookiecutter-uv-hypermodern-python
 [user guide]: https://cookiecutter-hypermodern-python.readthedocs.io/en/latest/guide.html#how-to-test-your-project
 
 <!-- github-only -->

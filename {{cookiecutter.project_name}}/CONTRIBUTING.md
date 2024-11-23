@@ -37,29 +37,27 @@ Request features on the [Issue Tracker].
 
 ## How to set up your development environment
 
-You need Python 3.8+ and the following tools:
+You need Python 3.9+ and the following tools:
 
-- [Poetry]
+- [uv]
 - [Nox]
-- [nox-poetry]
 
 Install the package with development requirements:
 
 ```console
-$ poetry install
+$ uv install
 ```
 
 You can now run an interactive Python session,
 or the command-line interface:
 
 ```console
-$ poetry run python
-$ poetry run {{cookiecutter.project_name}}
+$ uv run python
+$ uv run {{cookiecutter.project_name}}
 ```
 
-[poetry]: https://python-poetry.org/
+[uv]: https://docs.astral.sh/uv/
 [nox]: https://nox.thea.codes/
-[nox-poetry]: https://nox-poetry.readthedocs.io/
 
 ## How to test the project
 

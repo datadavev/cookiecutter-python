@@ -1,4 +1,4 @@
-# Hypermodern Python Cookiecutter
+# uv Hypermodern Python Cookiecutter
 
 ```{toctree}
 ---
@@ -11,7 +11,7 @@ guide
 contributing
 Code of Conduct <codeofconduct>
 license
-Changelog <https://github.com/cjolowicz/cookiecutter-hypermodern-python/releases>
+Changelog <https://github.com/bosd/cookiecutter-uv-hypermodern-python/releases>
 ```
 
 ```{include} ../README.md
@@ -27,7 +27,7 @@ based on the [Hypermodern Python] article series.
 ## Usage
 
 ```console
-$ cookiecutter gh:cjolowicz/cookiecutter-hypermodern-python --checkout="2022.6.3"
+$ cookiecutter gh:bosd/cookiecutter-uv-hypermodern-python --checkout="2022.6.3"
 ```
 
 ## Features
@@ -59,11 +59,11 @@ Our goals are:
 
 The project template is centered around the following tools:
 
-- [Poetry][1] for packaging and dependency management
+- [uv][1] for packaging and dependency management
 - [Nox][2] for automation of checks and other development tasks
 - [GitHub Actions][3] for continuous integration and delivery
 
-[1]: https://python-poetry.org/
+[1]: https://docs.astral.sh/uv/
 [2]: https://nox.thea.codes/
 [3]: https://github.com/features/actions
 

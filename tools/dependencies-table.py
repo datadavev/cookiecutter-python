@@ -7,7 +7,7 @@ import tomli
 PROJECT = Path("{{cookiecutter.project_name}}")
 JINJA_PATTERN = re.compile(r"{%.*%}")
 JINJA_PATTERN2 = re.compile(r"{{[^{]*}}")
-LINE_FORMAT = "   {name:{width}} {description}"
+LINE_FORMAT = "    {name:{width}} {description}"
 CANONICALIZE_PATTERN = re.compile(r"[-_.]+")
 DESCRIPTION_PATTERN = re.compile(r"\. .*")
 
@@ -38,11 +38,11 @@ def main() -> None:
     dependencies = {
         canonicalize_name(dependency)
         for section in ["dependencies", "dev-dependencies"]
-        for dependency in data["tool"]["poetry"][section].keys()
+        for dependency in data["tool"]["uv"][section].keys()
         if dependency != "python"
     }
 
-    path = PROJECT / "poetry.lock"
+    path = PROJECT / "project.lock"
     text = path.read_text()
     data = tomli.loads(text)
 
