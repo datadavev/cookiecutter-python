@@ -15,6 +15,7 @@ linkcheck_ignore = [
     "https://github.com/PyCQA/flake8-bugbear#",
     "https://github.com/peterjc/flake8-rst-docstrings#",
     "https://github.com/pre-commit/pre-commit-hooks#",
+    "https://opensource.org/license/mit",
     "https://github.com/pycqa/pep8-naming#",
     "https://github.com/terrencepreilly/darglint#",
     "https://github.com/PyCQA/mccabe#",
