@@ -119,6 +119,22 @@ jobs:
         id: check-parent-commit
         run: |
           echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> "$GITHUB_OUTPUT"
+          
+
+      - name: Debug Git Tags and Describe
+        run: |
+          echo "--- Listing all Git tags known to this runner (sorted by version): ---"
+          git tag -l --sort=-v:refname
+
+          echo ""
+          echo "--- Output of 'git describe --tags --abbrev=0' (what salsify likely uses for previous version detection): ---"
+          # 'git describe' fails if no tags are found, so we handle that gracefully.
+          git describe --tags --abbrev=0 || echo "No suitable tags found by 'git describe --tags --abbrev=0'"
+
+          echo ""
+          echo "--- Checking .git/refs/tags/ directory content: ---"
+          ls -la .git/refs/tags/ || echo "No tags directory found in .git/refs/"
+
 
       - name: Detect and tag new version
         id: check-version
