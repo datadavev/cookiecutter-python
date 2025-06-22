@@ -1,6 +1,6 @@
 [project]
 name = "cookiecutter-uv-hypermodern-python"
-version = "2025.06.24"
+version = "2025.06.25"
 description = "A Cookiecutter template for a hypermodern Python project using uv."
 readme = "README.md"
 requires-python = ">=3.9"
