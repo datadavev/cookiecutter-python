@@ -46,11 +46,42 @@ jobs:
           uv pip install toml # Install the 'toml' library
           uv pip install build wheel # Ensure build tools are available via uv
 
+      - name: Set virtual environment python path as job env variable
+        run: |
+          VENV_PYTHON_PATH="${{ github.workspace }}/.venv/bin/python"
+
+          echo "DEBUG: Setting PYTHON_BIN_FOR_VENV to: ${VENV_PYTHON_PATH}"
+
+          if [ -z "$VENV_PYTHON_PATH" ]; then
+            echo "ERROR: VENV_PYTHON_PATH is empty. Virtual environment Python not found!"
+            exit 1
+          fi
+
+          if [ ! -f "$VENV_PYTHON_PATH" ]; then
+            echo "ERROR: Python executable does not exist at computed path: ${VENV_PYTHON_PATH}"
+            echo "Please check the .venv/bin/ directory structure."
+            ls -la ${{ github.workspace }}/.venv/bin/
+            exit 1
+          fi
+
+          echo "PYTHON_BIN_FOR_VENV=${VENV_PYTHON_PATH}" >> "$GITHUB_ENV"
+          echo "DEBUG: Successfully set job environment variable PYTHON_BIN_FOR_VENV to: ${VENV_PYTHON_PATH}"
+
+      - name: Debug Python Path Output (Verify Job Env Variable)
+        run: |
+          echo "Debug: PYTHON_BIN_FOR_VENV as seen in this step is '${{ env.PYTHON_BIN_FOR_VENV }}'"
+          if [ -z "${{ env.PYTHON_BIN_FOR_VENV }}" ]; then
+            echo "CRITICAL ERROR: PYTHON_BIN_FOR_VENV is STILL empty when accessed from a subsequent step. This is a GitHub Actions env var bug."
+            exit 1
+          fi
+          if [ ! -f "${{ env.PYTHON_BIN_FOR_VENV }}" ]; then
+            echo "CRITICAL ERROR: Python executable not found at propagated env var path: '${{ env.PYTHON_BIN_FOR_VENV }}'"
+            exit 1
+          fi
+
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
-          # This checks if it's the first commit in the history.
-          # If not, it means there's a parent, which is needed for version comparison.
           echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> "$GITHUB_OUTPUT"
 
       - name: Detect and tag new version
@@ -58,40 +89,35 @@ jobs:
         if: steps.check-parent-commit.outputs.sha
         uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
-          # IMPORTANT: This command MUST output your *package's version*.
-          # If your template's pyproject.toml has `version = "X.Y.Z"`,
-          # you can parse it directly.
-          version-command: |
-            python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])"
-          # For a cookiecutter template itself, a manually updated version in pyproject.toml
-          # is often the simplest alongside this tag detection.
+          version-command: echo "${{ steps.get_version.outputs.PROJECT_VERSION }}"
 
       - name: Bump version for developmental release
-        # This step runs if `action-detect-and-tag-new-version` did NOT create a new tag.
-        # This typically means it's a `main` branch push that isn't a new release.
-        # This prepares a package for TestPyPI.
         if: "! steps.check-version.outputs.tag"
         run: |
-          # Read current version from pyproject.toml
-          CURRENT_VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          # Append .dev.<timestamp> for TestPyPI publish
+          PYTHON_EXE="${{ env.PYTHON_BIN_FOR_VENV }}"
+          if [ -z "$PYTHON_EXE" ]; then
+            echo "ERROR: PYTHON_EXE is empty in 'bump version' step. Cannot proceed."
+            exit 1
+          fi
+
+          PYPROJECT_TOML_PATH="${{ github.workspace }}/pyproject.toml"
+          echo "DEBUG (Bump): Current working directory: $(pwd)"
+          echo "DEBUG (Bump): Expected pyproject.toml path: ${PYPROJECT_TOML_PATH}"
+          if [ -f "${PYPROJECT_TOML_PATH}" ]; then
+            echo "DEBUG (Bump): pyproject.toml FOUND at ${PYPROJECT_TOML_PATH}."
+            ls -l "${PYPROJECT_TOML_PATH}"
+          else
+            echo "CRITICAL ERROR (Bump): pyproject.toml NOT FOUND at ${PYPROJECT_TOML_PATH}."
+            echo "Listing contents of repository root:"
+            ls -la "${{ github.workspace }}"
+            echo "Listing contents of current working directory:"
+            ls -la "$(pwd)"
+            exit 1
+          fi
+
+          CURRENT_VERSION=$("${PYTHON_EXE}" -c "import toml; print(toml.load('${{ github.workspace }}/pyproject.toml')['project']['version'])")
           DEVELOPMENT_VERSION="${CURRENT_VERSION}.dev.$(date +%s)"
           echo "Bumping version to ${DEVELOPMENT_VERSION} for TestPyPI release."
-          # You might want to actually modify pyproject.toml for the build,
-          # but make sure not to commit it back if it's just for the build.
-          # For uv build, the simplest is often to rely on environment variables
-          # or `build`'s configuration for pre-releases.
-          # A simpler approach is to tell 'build' to create dev versions.
-          # For now, we'll rely on the PyPI publish action to handle it,
-          # or ensure your build system dynamically gets the version.
-          # For a basic setup, the `if: !steps.check-version.outputs.tag` is mainly for conditional publish.
-          # No direct modification of pyproject.toml during the build is recommended here
-          # unless you commit it back, which would be noisy for dev versions.
-          # The `pypa/gh-action-pypi-publish` action often handles dev versions.
-          # Let's remove the direct version bump from here for now, as it's complex without committing.
-          # The primary goal is conditional *publishing*.
-
-      # --- End: Version Detection & Tagging ---
 
       - name: Build package with uv
         run: uv build
