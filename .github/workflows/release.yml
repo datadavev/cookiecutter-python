@@ -79,6 +79,42 @@ jobs:
             exit 1
           fi
 
+      - name: Get project version from pyproject.toml
+        id: get_version
+        run: |
+          PYTHON_EXE="${{ env.PYTHON_BIN_FOR_VENV }}"
+          if [ -z "$PYTHON_EXE" ]; then
+            echo "ERROR: PYTHON_EXE is empty in 'get_version' step. Cannot proceed."
+            exit 1
+          fi
+
+          PYPROJECT_TOML_FULL_PATH="${{ github.workspace }}/pyproject.toml"
+          echo "DEBUG (Get Version): Checking for pyproject.toml at: ${PYPROJECT_TOML_FULL_PATH}"
+          if [ ! -f "${PYPROJECT_TOML_FULL_PATH}" ]; then
+            echo "CRITICAL ERROR (Get Version): pyproject.toml NOT FOUND at ${PYPROJECT_TOML_FULL_PATH}."
+            ls -la "${{ github.workspace }}"
+            exit 1
+          fi
+          echo "DEBUG (Get Version): pyproject.toml found."
+          echo "DEBUG (Get Version): Content of pyproject.toml for debugging:"
+          cat "${PYPROJECT_TOML_FULL_PATH}" 
+          RAW_VERSION_OUTPUT=$("${PYTHON_EXE}" -c "import toml; print(toml.load('${PYPROJECT_TOML_FULL_PATH}')['project']['version'])")
+
+          VERSION=$(echo "${RAW_VERSION_OUTPUT}" | tr -d '\n\r ' )
+
+          echo "DEBUG (Get Version): Raw output from Python command: '${RAW_VERSION_OUTPUT}'"
+          echo "DEBUG (Get Version): Trimmed version: '${VERSION}'"
+
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Version extracted from pyproject.toml is EMPTY or contains only whitespace/newlines after trimming!"
+            echo "Please inspect pyproject.toml content and Python script output."
+            exit 1
+          fi
+
+          echo "PROJECT_VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Detected project version for salsify: ${VERSION}"
+
+
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
