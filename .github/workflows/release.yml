@@ -96,6 +96,58 @@ jobs:
           echo "PROJECT_VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Detected project version from pyproject.toml: ${VERSION}"
 
+      - name: Detect New Version and Create Tag
+        id: tag_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed for git push --tags
+        run: |
+          # We no longer need PYTHON_EXE for this comparison
+          CURRENT_VERSION="${{ steps.get_version.outputs.PROJECT_VERSION }}"
+          NEW_TAG_CREATED="false"
+
+          echo "Current project version from pyproject.toml: ${CURRENT_VERSION}"
+
+          LATEST_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          echo "Latest Git tag found by 'git describe': '${LATEST_GIT_TAG}'"
+
+          if [ -z "$LATEST_GIT_TAG" ]; then
+            echo "No existing Git tags found. Will create the first tag: ${CURRENT_VERSION}"
+            CREATE_TAG="true"
+          else
+            # Perform version comparison using pure Bash string comparison.
+            # This works correctly for YYYY.MM.DD format because it's lexicographically ordered.
+            if [[ "$CURRENT_VERSION" > "$LATEST_GIT_TAG" ]]; then
+              echo "New version detected (${CURRENT_VERSION} > ${LATEST_GIT_TAG}). Will create tag."
+              CREATE_TAG="true"
+            elif [[ "$CURRENT_VERSION" == "$LATEST_GIT_TAG" ]]; then
+              echo "Version is unchanged (${CURRENT_VERSION} == ${LATEST_GIT_TAG}). No new tag needed."
+              CREATE_TAG="false"
+            else # Current version is less than latest tag (this scenario indicates an issue if it's a release push)
+              echo "Current version (${CURRENT_VERSION}) is older than latest tag (${LATEST_GIT_TAG}). This should not happen for a release push."
+              CREATE_TAG="false"
+              # Optionally, you could uncomment the line below to make the workflow fail in this unexpected scenario.
+              # exit 1
+            fi
+          fi
+
+          if [ "$CREATE_TAG" = "true" ]; then
+            echo "Creating Git tag: ${CURRENT_VERSION}"
+            git tag "${CURRENT_VERSION}"
+
+            echo "Pushing new tag to remote..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git push origin "${CURRENT_VERSION}"
+
+            NEW_TAG_CREATED="true"
+            echo "Successfully created and pushed tag: ${CURRENT_VERSION}"
+          else
+            echo "No new tag created. Will publish to TestPyPI."
+          fi
+
+          echo "NEW_TAG_CREATED=${NEW_TAG_CREATED}" >> "$GITHUB_OUTPUT"
+          echo "Tagging process complete."
+
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
