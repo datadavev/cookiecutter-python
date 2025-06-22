@@ -83,43 +83,87 @@ jobs:
         id: get_version
         run: |
           PYTHON_EXE="${{ env.PYTHON_BIN_FOR_VENV }}"
-          if [ -z "$PYTHON_EXE" ]; then
-            echo "ERROR: PYTHON_EXE is empty in 'get_version' step. Cannot proceed."
-            exit 1
-          fi
-
           PYPROJECT_TOML_FULL_PATH="${{ github.workspace }}/pyproject.toml"
-          echo "DEBUG (Get Version): Checking for pyproject.toml at: ${PYPROJECT_TOML_FULL_PATH}"
-          if [ ! -f "${PYPROJECT_TOML_FULL_PATH}" ]; then
-            echo "CRITICAL ERROR (Get Version): pyproject.toml NOT FOUND at ${PYPROJECT_TOML_FULL_PATH}."
-            ls -la "${{ github.workspace }}"
-            exit 1
-          fi
-          echo "DEBUG (Get Version): pyproject.toml found."
-          echo "DEBUG (Get Version): Content of pyproject.toml for debugging:"
-          cat "${PYPROJECT_TOML_FULL_PATH}" 
+
           RAW_VERSION_OUTPUT=$("${PYTHON_EXE}" -c "import toml; print(toml.load('${PYPROJECT_TOML_FULL_PATH}')['project']['version'])")
-
-          VERSION=$(echo "${RAW_VERSION_OUTPUT}" | tr -d '\n\r ' )
-
-          echo "DEBUG (Get Version): Raw output from Python command: '${RAW_VERSION_OUTPUT}'"
-          echo "DEBUG (Get Version): Trimmed version: '${VERSION}'"
+          VERSION=$(echo "${RAW_VERSION_OUTPUT}" | tr -d '\n\r ')
 
           if [ -z "$VERSION" ]; then
-            echo "ERROR: Version extracted from pyproject.toml is EMPTY or contains only whitespace/newlines after trimming!"
-            echo "Please inspect pyproject.toml content and Python script output."
+            echo "ERROR: Version extracted from pyproject.toml is EMPTY!"
             exit 1
           fi
 
           echo "PROJECT_VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Detected project version for salsify: ${VERSION}"
+          echo "Detected project version from pyproject.toml: ${VERSION}"
 
+      - name: Detect New Version and Create Tag
+        id: tag_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed for git push --tags
+        run: |
+          PYTHON_EXE="${{ env.PYTHON_BIN_FOR_VENV }}"
+          CURRENT_VERSION="${{ steps.get_version.outputs.PROJECT_VERSION }}"
+          NEW_TAG_CREATED="false"
+
+          echo "Current project version from pyproject.toml: ${CURRENT_VERSION}"
+
+          LATEST_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          echo "Latest Git tag found by 'git describe': '${LATEST_GIT_TAG}'"
+
+          if [ -z "$LATEST_GIT_TAG" ]; then
+            echo "No existing Git tags found. Will create the first tag: ${CURRENT_VERSION}"
+            CREATE_TAG="true"
+          else
+            # Compare current version with latest Git tag using Python's packaging.version
+            # The Python script is carefully indented below.
+            COMPARE_RESULT=$("${PYTHON_EXE}" -c "
+                import sys
+                from packaging.version import parse
+                current = parse('${CURRENT_VERSION}')
+                previous = parse('${LATEST_GIT_TAG}')
+                if current > previous:
+                    sys.exit(0) # current is greater
+                elif current == previous:
+                    sys.exit(1) # current is same
+                else:
+                    sys.exit(2) # current is less
+            ")
+            COMPARE_EXIT_CODE=$?
+
+            if [ "$COMPARE_EXIT_CODE" -eq 0 ]; then
+              echo "New version detected (${CURRENT_VERSION} > ${LATEST_GIT_TAG}). Will create tag."
+              CREATE_TAG="true"
+            elif [ "$COMPARE_EXIT_CODE" -eq 1 ]; then
+              echo "Version is unchanged (${CURRENT_VERSION} == ${LATEST_GIT_TAG}). No new tag needed."
+              CREATE_TAG="false"
+            else # COMPARE_EXIT_CODE -eq 2
+              echo "Current version (${CURRENT_VERSION}) is older than latest tag (${LATEST_GIT_TAG}). This should not happen for a release push."
+              CREATE_TAG="false"
+            fi
+          fi
+
+          if [ "$CREATE_TAG" = "true" ]; then
+            echo "Creating Git tag: ${CURRENT_VERSION}"
+            git tag "${CURRENT_VERSION}"
+
+            echo "Pushing new tag to remote..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git push origin "${CURRENT_VERSION}"
+
+            NEW_TAG_CREATED="true"
+            echo "Successfully created and pushed tag: ${CURRENT_VERSION}"
+          else
+            echo "No new tag created. Will publish to TestPyPI."
+          fi
+
+          echo "NEW_TAG_CREATED=${NEW_TAG_CREATED}" >> "$GITHUB_OUTPUT"
+          echo "Tagging process complete."
 
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
           echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> "$GITHUB_OUTPUT"
-          
 
       - name: Debug Git Tags and Describe
         run: |
@@ -135,48 +179,23 @@ jobs:
           echo "--- Checking .git/refs/tags/ directory content: ---"
           ls -la .git/refs/tags/ || echo "No tags directory found in .git/refs/"
 
-
-      - name: Detect and tag new version
-        id: check-version
-        if: steps.check-parent-commit.outputs.sha
-        uses: salsify/action-detect-and-tag-new-version@v2.0.3
-        with:
-          version-command: echo "${{ steps.get_version.outputs.PROJECT_VERSION }}"
-
       - name: Bump version for developmental release
-        if: "! steps.check-version.outputs.tag"
+        if: steps.tag_release.outputs.NEW_TAG_CREATED == 'false'
         run: |
           PYTHON_EXE="${{ env.PYTHON_BIN_FOR_VENV }}"
-          if [ -z "$PYTHON_EXE" ]; then
-            echo "ERROR: PYTHON_EXE is empty in 'bump version' step. Cannot proceed."
-            exit 1
-          fi
-
-          PYPROJECT_TOML_PATH="${{ github.workspace }}/pyproject.toml"
-          echo "DEBUG (Bump): Current working directory: $(pwd)"
-          echo "DEBUG (Bump): Expected pyproject.toml path: ${PYPROJECT_TOML_PATH}"
-          if [ -f "${PYPROJECT_TOML_PATH}" ]; then
-            echo "DEBUG (Bump): pyproject.toml FOUND at ${PYPROJECT_TOML_PATH}."
-            ls -l "${PYPROJECT_TOML_PATH}"
-          else
-            echo "CRITICAL ERROR (Bump): pyproject.toml NOT FOUND at ${PYPROJECT_TOML_PATH}."
-            echo "Listing contents of repository root:"
-            ls -la "${{ github.workspace }}"
-            echo "Listing contents of current working directory:"
-            ls -la "$(pwd)"
-            exit 1
-          fi
-
           CURRENT_VERSION=$("${PYTHON_EXE}" -c "import toml; print(toml.load('${{ github.workspace }}/pyproject.toml')['project']['version'])")
           DEVELOPMENT_VERSION="${CURRENT_VERSION}.dev.$(date +%s)"
           echo "Bumping version to ${DEVELOPMENT_VERSION} for TestPyPI release."
+          # Note: This step currently only echoes the bumped version.
+          # If you want to actually *write* this back to pyproject.toml and commit/push it,
+          # you would need additional logic here (e.g., using `toml` library in Python to modify the file).
+          # For now, it's just a message preceding the TestPyPI publish.
 
       - name: Build package with uv
         run: uv build
 
       - name: Publish package on PyPI
-        # This step runs ONLY if a new tag (official release) was created by the previous step.
-        if: steps.check-version.outputs.tag
+        if: steps.tag_release.outputs.NEW_TAG_CREATED == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1 # Using the latest recommended stable release
         with:
           # Recommended: Use PyPI Trusted Publishing.
@@ -188,7 +207,7 @@ jobs:
 
       - name: Publish package on TestPyPI
         # This step runs if NO new tag was created (i.e., a regular push to main/master).
-        if: "! steps.check-version.outputs.tag"
+        if: steps.tag_release.outputs.NEW_TAG_CREATED == 'false'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           # Use your TestPyPI API token:
