@@ -2,7 +2,7 @@
   "project_name": "uv-hypermodern-python",
   "package_name": "{{ cookiecutter.project_name.replace('-', '_') }}",
   "friendly_name": "{{ cookiecutter.project_name.replace('-', ' ').title() }}",
-  "author": "bosd",
+  "author": "Dave Vieglais",
   "email": "dave.vieglais@gmail.com",
   "github_user": "datadavev",
   "version": "0.0.0",
